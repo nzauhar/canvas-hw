@@ -1,103 +1,168 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Natalie's Drawing Homework</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-<script type="text/javascript" scr="https://code.jquery.com/jquery-latest.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-</head>
-
-<body>
-
-<!-- Canvas resources: W3 School and William Malone--> 
-<canvas id="canvasDiv" width="800" height="500"></canvas>
-
-<div id="canvasDiv"></div>
-     
-     <script>
-        canvasDiv = document.getElementById('canvas');
-        var canvas = document.createElement('canvas');
-        canvas.setAttribute('width', '800');
-        canvas.setAttribute('height', '500');
-        canvas.setAttribute('id', 'canvas');
-        canvas.style.backgroundColor = "#ddd";
-        canvasDiv.appendChild(canvas);
-        if(typeof canvasDiv != 'undefined'){
-            canvas = canvasDiv.initElement(canvas);
-            }
-        if(typeof G_vmlCanvasManager != 'undefined') {
-            canvas = G_vmlCanvasManager.initElement(canvas);
-            }
-        context = canvas.getContext("2d");    
-
-    $('#canvas').mousedown(function(e)
-	{
-    var mouseX = e.pageX - this.offsetLeft;
-    var mouseY = e.pageY - this.offsetTop;
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>HTML5 Paint</title>
 		
-    paint = true;
-    addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop);
-    redraw();
-    });
-    
-// <!-- Mouse Move Event -->
-    $('#canvas').mousemove(function(e){
-    if(paint){
-    addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, true);
-    redraw();
-        }
-    });
-
-// <!-- Mouse Up Event -->
-    $('#canvas').mouseup(function(e){
-    paint = false;
-    });
-
-// <!-- Mouse Leave Event -->
-$('#canvas').mouseleave(function(e){
-    paint = false;
-    });
-
-// <!-- Save Click Position -->
-    var clickX = new Array();
-    var clickY = new Array();
-    var clickDrag = new Array();
-    var paint;
-
-    function addClick(x, y, dragging)
-    {
-        clickX.push(x);
-        clickY.push(y);
-        clickDrag.push(dragging);
-    }
-
-// <!-- Redraw Function -->
-    function redraw(){
-        context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clears the canvas
-  
-        context.strokeStyle = "#df4b26";
-        context.lineJoin = "round";
-        context.lineWidth = 5;
+		<link rel="stylesheet" href="html5reset-1.6.1.css">
+		<!-- <style>/*tools*/
+			#tools{
+				float:left;
+				width:80px;
+				padding:15px;
+			}
+		</style> -->
+		<!-- <style>/*color palette*/
+			#colorPalette div{
+				width:50px;
+				height:50px;
+				margin-bottom:4px;
+			}
+			#red{
+				background-color:red;
+			}
+			#green{
+				background-color:green;
+			}   
+			/* #blue{
+				background-color:blue;
+			} */ -->
+	
+		<style>/*body*/
+		body{
+			background-color:#ccc;
+			overflow:hidden;
+		}
+		</style>
+		<style>/*paint area*/
+		#paintArea{
+			width:800px;
+			height:500px;
+			background-color:#fff;
+			float:left;
+			position:relative;
+		}
+		#paintArea canvas{
+			position:absolute;
+			top:0px;
+			left:0px;
+			cursor:crosshair;
+		}
+		</style>
+		
+<!-- 	
+		<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	
+		<script type="text/javascript" src="jquery-1.7.1.min.js"></script>
+		<script type="text/javascript" src="canvasPaint.js"></script> -->
+		<script type="text/javascript">
+			var selectedColor = "red";
 			
-    for(var i=0; i < clickX.length; i++) {
-        context.beginPath();
-        if(clickDrag[i] && i){
-            context.moveTo(clickX[i-1], clickY[i-1]);
-         }
-        else{
-            context.moveTo(clickX[i]-1, clickY[i]);
-            }
-            context.lineTo(clickX[i], clickY[i]);
-            context.closePath();
-            context.stroke();
-           }
+			// $(document).ready(function(){
+			// 	$("#colorPalette div").click(function(){    
+			// 		selectedColor = this.id;
+			// 	});
+			// });
+			
+			// function kaydet(){
+			// 	var paintCanvas = document.getElementById("paintCanvas");
+			// 	window.open(paintCanvas.toDataURL("image/png"), "sonDurum");
+			// }
+		</script>
+	</head>
+	
+	<body>
+		<header>
+			<hgroup>
+				<h1>HTML Paint</h1>
+			</hgroup>
+		<!-- </header>
+		<section id="tools">
+			<section id="colorPalette">
+				<div id="red"></div>
+				<div id="green"></div>
+				<div id="blue"></div>
+			</section>
+			<section id="toolBox">
+				<input type="checkbox" id="kare"><label for="kare">Kare</label>
+				<input type="button" value="kaydet" onclick="kaydet()">
+			</section>
+		</section> -->
+		<section id="paintArea">
+			<canvas id="paintCanvas" width="800" height="500"></canvas>
+			<canvas id="hintCanvas" width="800" height="500"></canvas>
+		</section>
+	</body>
+	
+	<script type="text/javascript">
+	
+	var paintCanvas = document.getElementById("paintCanvas");
+	var paintContext = paintCanvas.getContext("2d");
+	var hintCanvas = document.getElementById("hintCanvas");
+	var hintContext = hintCanvas.getContext("2d");
+	
+	var kareMi = false;
+	
+	var isDragging = false;
+	var startPoint = { x:0, y:0 };
+     
+	function canvasReady(){
+		hintCanvas.onmousedown = paintMouseDown;
+		hintCanvas.onmouseup = paintMouseUp;
+		hintCanvas.onmousemove = paintMouseMove;
+	}
+	
+        function paintMouseDown(e){
+            isDragging = true;
+            // kareMi = document.getElementById("kare").checked;
+            startPoint.x = e.offsetX;
+            startPoint.y = e.offsetY;
+            paintContext.beginPath();
+            paintContext.moveTo(startPoint.x, startPoint.y);
+            paintContext.strokeStyle = ("blue");
+            paintContext.lineJoin = "round";
+            paintContext.lineWidth = 10;
         }
-
-    </script>
-
-</body>
-
+	function paintMouseUp(e){
+		isDragging = false;
+		if(kareMi){
+			hintCanvas.width = hintCanvas.width;
+			var width = e.offsetX - startPoint.x;
+			var height = e.offsetY - startPoint.y;
+			
+			paintContext.beginPath();
+			paintContext.fillStyle = selectedColor;
+			// paintContext.fillRect(startPoint.x, startPoint.y, width, height);
+		}
+	}
+	function paintMouseMove(e){
+		if(isDragging){
+			// console.log(kareMi);
+			if(kareMi){
+				hintCanvas.width = hintCanvas.width;
+				var width = e.offsetX - startPoint.x;
+				var height = e.offsetY - startPoint.y;
+				// hintContext.strokeRect(startPoint.x, startPoint.y, width, height);
+			}
+			else{
+				paintContext.lineTo(e.offsetX, e.offsetY);
+				paintContext.stroke();
+            } 
+		}
+    }
+    
+//     var pressA = event.key 
+   
+//     function colorKey (){
+//        if (pressA == "a" || pressA == "A"){
+//            selectedColor = "magenta";   
+//        }
+// }
+//     function clearCanvas()
+// {
+// 	context.clearRect(0, 0, canvasWidth, canvasHeight);
+// }
+	
+	canvasReady();
+	</script>
 </html>
-
