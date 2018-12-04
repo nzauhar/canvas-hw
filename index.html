@@ -118,10 +118,40 @@
             startPoint.x = e.offsetX;
             startPoint.y = e.offsetY;
             paintContext.beginPath();
-            paintContext.moveTo(startPoint.x, startPoint.y);
-            paintContext.strokeStyle = ("blue");
+			paintContext.moveTo(startPoint.x, startPoint.y);
+		
+		
+            // paintContext.strokeStyle = ("blue");
             paintContext.lineJoin = "round";
-            paintContext.lineWidth = 10;
+			paintContext.lineWidth = 10;
+			
+			window.addEventListener("keydown",function(e){
+				if (e.keyCode == 71) {
+					console.log(e.keyCode);
+					paintContext.strokeStyle = ("green");
+				}
+
+				if (e.keyCode == 66) {
+					paintContext.strokeStyle = ("blue");
+				}
+
+				if (e.keyCode == 82) {
+					paintContext.strokeStyle = ("red");
+				}
+				
+				if (e.keyCode == 38) {
+					paintContext.lineWidth = paintContext.lineWidth + 10;
+				}
+				
+				if (e.keyCode == 40) {
+					paintContext.lineWidth = paintContext.lineWidth - 1;
+				}
+
+				if (e.keyCode == 32) {
+					paintContext.clearRect(0, 0, paintCanvas.width, paintCanvas.height);
+				}
+
+			});
         }
 	function paintMouseUp(e){
 		isDragging = false;
@@ -149,7 +179,10 @@
 				paintContext.stroke();
             } 
 		}
-    }
+	}
+	
+
+
     
 //     var pressA = event.key 
    
