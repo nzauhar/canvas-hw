@@ -123,7 +123,7 @@
 		
             // paintContext.strokeStyle = ("blue");
             paintContext.lineJoin = "round";
-			paintContext.lineWidth = 10;
+			paintContext.lineWidth = 20;
 			
 			window.addEventListener("keydown",function(e){
 				if (e.keyCode == 71) {
@@ -137,6 +137,10 @@
 
 				if (e.keyCode == 82) {
 					paintContext.strokeStyle = ("red");
+				}
+
+				if (e.keyCode == 89) {
+					paintContext.strokeStyle = ("yellow");
 				}
 				
 				if (e.keyCode == 38) {
